@@ -40,13 +40,13 @@ class HBNBCommand(cmd.Cmd):
             print('(hbnb)')
 
     # _______________________________________________________________________________
-
+    """
     def precmd(self, line):
-        """Reformat command line for advanced command syntax.
+        Reformat command line for advanced command syntax.
 
         Usage: <class name>.<command>([<id> [<*args> or <**kwargs>]])
         (Brackets denote optional fields in usage example.)
-        """
+
         _cmd = _cls = _id = _args = ''  # initialize line elements
 
         # scan for general formating - i.e '.', '(', ')'
@@ -79,7 +79,7 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] == '{' and pline[-1] =='}'\
+                    if pline[0] == '{' and pline[-1] == '}'\
                             and type(eval(pline)) is dict:
                         _args = pline
                     else:
@@ -91,7 +91,7 @@ class HBNBCommand(cmd.Cmd):
             pass
         finally:
             return line
-
+    """
     # _______________________________________________________________________________
 
     def postcmd(self, stop, line):
@@ -135,7 +135,7 @@ class HBNBCommand(cmd.Cmd):
 
     def __cmd_validation(usage, obj=None):
         for k, v in usage.items():
-            if  k == "class_name" and v == "":
+            if k == "class_name" and v == "":
                 print("** class name missing **")
                 return 0
 
@@ -168,38 +168,39 @@ class HBNBCommand(cmd.Cmd):
         args = line.split()
 
         # get the attributes part of the list
-        # attributes_args = list(filter(lambda arg: re.match('^\w{1,}=', arg),args))
-        
+        # attributes_args = list(filter(lambda arg: re.match('^\w{1,}=', arg),
+        #                        args))
+
         attributes_args = [arg for arg in args if '=' in arg]
-        
+
         # args = list(filter(lambda arg: not re.match('^\w{1,}=', arg),args))
-        
+
         args = [arg for arg in args if '=' not in arg]
 
         args = args[:len(usage) - 1]
-        
-        # Add the attributes to the attributes dictionary        
+
+        # Add the attributes to the attributes dictionary
         if attributes_args:
             for att in attributes_args:
                 [key, value] = att.split('=')
                 attrs_obj = usage['attributes']
-                
+
                 attrs_obj[key] = value.replace('_', ' ').replace('"', '\"')
-                
+
         if len(args) < len(usage):
             for _ in range(len(usage) - len(args)):
                 args.append("")
 
         i = 0
         args_len = len(args)
-        
+
         for k in usage.keys():
             if i > args_len - 1:
                 break
-            
+
             if k != 'attributes':
                 usage[k] = args[i]
-            
+
             i += 1
 
     # _______________________________________________________________________________
@@ -220,9 +221,9 @@ class HBNBCommand(cmd.Cmd):
             return
 
         class_name = usage_create.get('class_name')
-        
+
         class_attrs = usage_create.get('attributes')
-        
+
         if class_attrs == {}:
             new_instance = HBNBCommand.classes[class_name]()
         else:
@@ -296,7 +297,7 @@ class HBNBCommand(cmd.Cmd):
         key = c_name + "." + c_id
 
         try:
-            del(storage.all()[key])
+            del (storage.all()[key])
             storage.save()
         except KeyError:
             print("** no instance found **")
@@ -316,7 +317,6 @@ class HBNBCommand(cmd.Cmd):
         """
 
         usage_all = {"class_name": ""}
-
 
         HBNBCommand.__handle_usage(line, usage_all)
 
@@ -339,16 +339,16 @@ class HBNBCommand(cmd.Cmd):
             list_instance.append(v)
         """
         list_instance = []
-        
+
         for v in all_objects.values():
             if usage_all["class_name"] != '':
                 if v.__class__.__name__ == usage_all["class_name"]:
                     list_instance.append(v.__str__())
             else:
                 list_instance.append(v.__str__())
-                
+
         if list_instance:
-                print(list_instance)
+            print(list_instance)
 
     # _______________________________________________________________________________
 
@@ -366,7 +366,7 @@ class HBNBCommand(cmd.Cmd):
             if args == k.split('.')[0]:
                 count += 1
         print(count)
-    
+
     # _______________________________________________________________________________
 
     def help_count(self):
@@ -376,7 +376,7 @@ class HBNBCommand(cmd.Cmd):
     # _______________________________________________________________________________
 
     def do_update(self, args):
-        """Updates a certain object with new info 
+        """Updates a certain object with new info
         c_name = c_id = att_name = att_val = kwargs = ''
         """
 
@@ -465,6 +465,7 @@ class HBNBCommand(cmd.Cmd):
         """ Help information for the update class """
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
+
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
