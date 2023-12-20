@@ -22,6 +22,15 @@ class Place(BaseModel, Base):
         longitude = 0.0
         amenity_ids = []
 
+        @property
+        def reviews(self):
+            """ returns list of Review instances related to state """
+            from models import storage, Review
+            reviews_list = []
+            for review in storage.all(Review).values():
+                if review.state_id == self.id:
+                    reviews_list.append(review)
+            return reviews_list
     else:
         __tablename__ = "places"
         city_id = Column(String(60), ForeignKey('cities.id'), nullable=False)
@@ -34,3 +43,4 @@ class Place(BaseModel, Base):
         price_by_night = Column(Integer, nullable=False, default=0)
         latitude = Column(Float)
         longitude = Column(Float)
+        reviews = relationship("Review", cascade="delete", backref="place")
