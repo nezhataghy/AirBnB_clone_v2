@@ -12,7 +12,7 @@ class FileStorage:
         """Returns a dictionary of models currently in storage"""
         if cls:
             class_objects = {}
-            for k, v in self.__objects.values():
+            for k, v in FileStorage.__objects.values():
                 if v.__class__ == cls:
                     class_objects[k] = v
             return class_objects
@@ -60,5 +60,5 @@ class FileStorage:
         """Deletes obj from __objects if it is inside"""
         if obj:
             key = f"{obj.__class__.__name__}.{obj.id}"
-            if key in self.__objects:
-                del self.__objects[key]
+            if key in FileStorage.__objects:
+                del FileStorage.__objects[key]
