@@ -21,16 +21,16 @@ class HBNBCommand(cmd.Cmd):
     prompt = '(hbnb) ' if sys.__stdin__.isatty() else ''
 
     classes = {
-               'BaseModel': BaseModel, 'User': User, 'Place': Place,
-               'State': State, 'City': City, 'Amenity': Amenity,
-               'Review': Review
-              }
+        'BaseModel': BaseModel, 'User': User, 'Place': Place,
+        'State': State, 'City': City, 'Amenity': Amenity,
+        'Review': Review
+    }
     dot_cmds = ['all', 'count', 'show', 'destroy', 'update']
     types = {
-             'number_rooms': int, 'number_bathrooms': int,
-             'max_guest': int, 'price_by_night': int,
-             'latitude': float, 'longitude': float
-            }
+        'number_rooms': int, 'number_bathrooms': int,
+        'max_guest': int, 'price_by_night': int,
+        'latitude': float, 'longitude': float
+    }
 
     # _______________________________________________________________________________
 
@@ -177,7 +177,8 @@ class HBNBCommand(cmd.Cmd):
 
         args = [arg for arg in args if '=' not in arg]
 
-        args = args[:len(usage) - 1]
+        if len(usage) != 1:
+            args = args[:len(usage) - 1]
 
         # Add the attributes to the attributes dictionary
         if attributes_args:
@@ -185,7 +186,7 @@ class HBNBCommand(cmd.Cmd):
                 [key, value] = att.split('=')
                 attrs_obj = usage['attributes']
 
-                attrs_obj[key] = value.replace('_', ' ').replace('"', '\"')
+                attrs_obj[key] = value.replace('_', ' ').replace('"', '')
 
         if len(args) < len(usage):
             for _ in range(len(usage) - len(args)):
@@ -315,7 +316,6 @@ class HBNBCommand(cmd.Cmd):
 
         Usage: all class_name
         """
-
         usage_all = {"class_name": ""}
 
         HBNBCommand.__handle_usage(line, usage_all)
@@ -328,19 +328,14 @@ class HBNBCommand(cmd.Cmd):
         if is_validated == 0:
             return
 
-        usage_all["class_name"] = line
-
         # return __object
-        all_objects = storage.all()
-        """
+        all_objects = storage.all(eval(usage_all['class_name']))
 
-        for v in all_objects.values():
-            print(v)
-            list_instance.append(v)
-        """
         list_instance = []
 
         for v in all_objects.values():
+            if "_sa_instance_state" in v.__dict__:
+                del v.__dict__["_sa_instance_state"]
             if usage_all["class_name"] != '':
                 if v.__class__.__name__ == usage_all["class_name"]:
                     list_instance.append(v.__str__())
