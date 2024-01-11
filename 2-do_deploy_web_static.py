@@ -6,8 +6,6 @@ from datetime import datetime
 
 
 env.hosts = ['34.232.65.47', '34.202.158.94']
-env.user = 'ubuntu'
-
 
 def do_pack():
     """Compresses File"""
