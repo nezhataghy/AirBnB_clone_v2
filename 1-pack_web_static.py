@@ -4,7 +4,6 @@ from fabric.api import *
 from datetime import datetime
 
 
-
 def do_pack():
     """Compresses File"""
     current = datetime.now()
