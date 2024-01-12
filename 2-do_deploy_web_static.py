@@ -17,22 +17,10 @@ def do_pack():
     except Exception:
         return None
 
-
-def get_ip_address(domain):
-    """Function To Get IP Address"""
-    import socket
-    try:
-        ip_address = socket.gethostbyname(domain)
-        return ip_address
-    except socket.gaierror:
-        return False
-
-
 env.hosts = ['34.232.65.47', '34.202.158.94']
 
 env.user = 'ubuntu'
-env.key_filename = '~/alx/aicha_key'
-
+env.key_filename = '~/.ssh/alx'
 
 def do_deploy(archive_path):
     """Function To Deploy File"""
