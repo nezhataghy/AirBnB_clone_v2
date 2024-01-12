@@ -1,104 +1,57 @@
 #!/usr/bin/python3
-"""Fabric script that generates a .tgz archive from the contents of the"""
-from fabric.api import sudo, env, put, local, task
-from datetime import datetime
-
-
-@task
-def do_pack():
-    """Function To Compress File Using tar"""
-    try:
-        current_time = datetime.now().strftime("%Y%m%d%H%M%S")
-        folder_to_save = "versions"
-        local(f"mkdir -p {folder_to_save}")
-        file_name_generated = f"web_static_{current_time}.tgz"
-        local(f"tar -cvzf {folder_to_save}/{file_name_generated} web_static")
-        return f"{folder_to_save}/{file_name_generated}"
-    except Exception:
-        return None
-
-
-def get_ip_address(domain):
-    """Function To Get IP Address"""
-    import socket
-    try:
-        ip_address = socket.gethostbyname(domain)
-        return ip_address
-    except socket.gaierror:
-        return False
-
+""" Creates and distributes an archive to web servers,
+using created function deploy and pack"""
+from fabric.api import *
+import os
+do_pack = __import__('1-pack_web_static').do_pack
+# do_deploy = __import__('2-do_deploy_web_static').do_deploy
 
 env.hosts = ['34.232.65.47', '34.202.158.94']
 
 
-@task
-def do_deploy(archive_path):
-    """Function To Deploy File"""
-    """
-    fab -f 2-do_deploy_web_static.py
-    do_deploy:archive_path=versions/web_static_20231009012456.tgz
-    -i ./alx -u root
-    """
-    import os
-    if not os.path.exists(archive_path):
-        return False
-    try:
-        put(archive_path, "/tmp/")
-
-        folder_to_save = "/data/web_static/releases"
-        file_name_generated = archive_path.split(".")[0]
-        file_name_generated = file_name_generated.split("/")[-1]
-
-        server_archive_path = f"/tmp/{file_name_generated}.tgz"
-        sudo(f"mkdir -p {folder_to_save}/{file_name_generated}")
-        sudo(f"tar -xzf /tmp/{file_name_generated}.tgz "
-             f"-C {folder_to_save}/{file_name_generated}")
-
-        sudo(f"rm {server_archive_path}")
-        sudo(f"mv {folder_to_save}/{file_name_generated}/web_static/*"
-             f" {folder_to_save}/{file_name_generated}/")
-        sudo(f"rm -rf {folder_to_save}/{file_name_generated}/web_static")
-
-        try:
-            sudo('rm -rf /data/web_static/current')
-        except BaseException:
-            pass
-        sudo(f"ln -s {folder_to_save}/{file_name_generated}"
-             f" /data/web_static/current")
-        print("New version deployed!")
-        return True
-    except Exception:
-        return False
-
-
-@task
 def deploy():
-    """full deployment"""
+    """Pack and deploy all file """
+    file_path = do_pack()
+    if not file_path:
+        return False
+
+    run_cmd = do_deploy(file_path)
+    return run_cmd
+
+
+def do_deploy(archive_path):
+    """Archive distributor"""
     try:
-        path = do_pack()
-        if path is None:
+        try:
+            if os.path.exists(archive_path):
+                arc_tgz = archive_path.split("/")
+                arg_save = arc_tgz[1]
+                arc_tgz = arc_tgz[1].split('.')
+                arc_tgz = arc_tgz[0]
+
+                """Upload archive to the server"""
+                put(archive_path, '/tmp')
+
+                """Save folder paths in variables"""
+                uncomp_fold = '/data/web_static/releases/{}'.format(arc_tgz)
+                tmp_location = '/tmp/{}'.format(arg_save)
+
+                """Run remote commands on the server"""
+                run('mkdir -p {}'.format(uncomp_fold))
+                run('tar -xvzf {} -C {}'.format(tmp_location, uncomp_fold))
+                run('rm {}'.format(tmp_location))
+                run('mv {}/web_static/* {}'.format(uncomp_fold, uncomp_fold))
+                run('rm -rf {}/web_static'.format(uncomp_fold))
+                run('rm -rf /data/web_static/current')
+                run('ln -sf {} /data/web_static/current'.format(uncomp_fold))
+                run('sudo service nginx restart')
+                return True
+            else:
+                print('File does not exist')
+                return False
+        except Exception as err:
+            print(err)
             return False
-        return do_deploy(path)
     except Exception:
-        return False
-
-
-@task
-def install_bash_script(path):
-    """install bash script"""
-    import os
-    env.hosts = ['34.232.65.47', '34.202.158.94']
-    if not os.path.exists(path):
-        return False
-    try:
-        for host in env.hosts:
-            if not host:
-                continue
-            env.host_string = host
-            put(path, "/tmp/")
-            sudo(f"chmod +x /tmp/{path}")
-            sudo(f"bash /tmp/{path}")
-            print("Script Finished")
-        return True
-    except Exception:
+        print('Error')
         return False
