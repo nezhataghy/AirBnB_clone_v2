@@ -1,78 +1,57 @@
 #!/usr/bin/python3
-import os
-from datetime import datetime
+""" Creates and distributes an archive to web servers,
+using created function deploy and pack"""
 from fabric.api import *
-
+import os
+do_pack = __import__('1-pack_web_static').do_pack
+# do_deploy = __import__('2-do_deploy_web_static').do_deploy
 
 env.hosts = ['34.232.65.47', '34.202.158.94']
 
 
-def do_pack():
-    '''
-        Creating an archive with the file in web_static folder
-    '''
-    now = datetime.now()
-    filename = "versions/web_static_{}{}{}{}{}{}.tgz".format(now.year,
-                                                             now.month,
-                                                             now.day,
-                                                             now.hour,
-                                                             now.minute,
-                                                             now.second)
-    print("Packing web_static to versions/{}".format(filename))
-    local("mkdir -p versions")
-    result = local("tar -vczf {} web_static".format(filename))
-    if result.succeeded:
-        return (filename)
-    else:
-        return None
+def deploy():
+    """Pack and deploy all file """
+    file_path = do_pack()
+    if not file_path:
+        return False
+
+    run_cmd = do_deploy(file_path)
+    return run_cmd
 
 
 def do_deploy(archive_path):
-    '''
-        Deploys an archive to the web servers
-    '''
-    name = archive_path.split("/")[1]
-    if not os.path.exists(archive_path):
+    """Archive distributor"""
+    try:
+        try:
+            if os.path.exists(archive_path):
+                arc_tgz = archive_path.split("/")
+                arg_save = arc_tgz[1]
+                arc_tgz = arc_tgz[1].split('.')
+                arc_tgz = arc_tgz[0]
+
+                """Upload archive to the server"""
+                put(archive_path, '/tmp')
+
+                """Save folder paths in variables"""
+                uncomp_fold = '/data/web_static/releases/{}'.format(arc_tgz)
+                tmp_location = '/tmp/{}'.format(arg_save)
+
+                """Run remote commands on the server"""
+                run('mkdir -p {}'.format(uncomp_fold))
+                run('tar -xvzf {} -C {}'.format(tmp_location, uncomp_fold))
+                run('rm {}'.format(tmp_location))
+                run('mv {}/web_static/* {}'.format(uncomp_fold, uncomp_fold))
+                run('rm -rf {}/web_static'.format(uncomp_fold))
+                run('rm -rf /data/web_static/current')
+                run('ln -sf {} /data/web_static/current'.format(uncomp_fold))
+                run('sudo service nginx restart')
+                return True
+            else:
+                print('File does not exist')
+                return False
+        except Exception as err:
+            print(err)
+            return False
+    except Exception:
+        print('Error')
         return False
-
-    result = put(archive_path, "/tmp/")
-    if result.failed:
-        return False
-
-    run("mkdir -p /data/web_static/releases/{}".format(name[:-4]))
-
-    cmd = "tar -xzf /tmp/{} -C /data/web_static/releases/{}".format(name,
-                                                                    name[:-4])
-    result = run(cmd)
-    if result.failed:
-        return False
-
-    result = run("rm /tmp/{}".format(name))
-    if result.failed:
-        return False
-
-    run("cp -rp /data/web_static/releases/{}/web_static/*\
-        /data/web_static/releases/{}/".format(name[:-4], name[:-4]))
-
-    run("rm -rf /data/web_static/releases/{}/web_static/".format(name[:-4]))
-    result = run("rm /data/web_static/current")
-    if result.failed:
-        return False
-
-    path = "/data/web_static/releases/{}".format(name[:-4])
-    cmd = "ln -sf {} /data/web_static/current".format(path)
-    result = run(cmd)
-    if result.failed:
-        return False
-    return True
-
-
-def deploy():
-    '''
-        Interface for set-up functions
-    '''
-    path = do_pack()
-    if path is None:
-        return False
-    value = do_deploy(path)
-    return value
