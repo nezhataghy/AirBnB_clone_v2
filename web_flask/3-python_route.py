@@ -20,14 +20,14 @@ def hbnb():
 
 @app.route("/c/<text>", strict_slashes=False)
 def handle_c_route(text):
-    """Handling C routes"""
+    """Handling C route"""
     return f"C {escape(text.replace('_', ' '))}"
 
 
 @app.route("/python/", strict_slashes=False)
 @app.route("/python/<text>", strict_slashes=False)
 def handle_python_route(text="is cool"):
-    """Handling Python routes"""
+    """Handling Python route"""
     return f"Python {escape(text.replace('_', ' '))}"
 
 
