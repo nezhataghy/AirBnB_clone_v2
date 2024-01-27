@@ -8,6 +8,8 @@ class FileStorage:
     __file_path = 'file.json'
     __objects = {}
 
+    # -------------------------------------------------------------------
+
     def all(self, cls=None):
         """Returns a dictionary of models currently in storage"""
         if cls:
@@ -19,9 +21,13 @@ class FileStorage:
         else:
             return FileStorage.__objects
 
+    # -------------------------------------------------------------------
+
     def new(self, obj):
         """Adds new object to storage dictionary"""
         self.all().update({obj.to_dict()['__class__'] + '.' + obj.id: obj})
+
+    # -------------------------------------------------------------------
 
     def save(self):
         """Saves storage dictionary to file"""
@@ -31,6 +37,8 @@ class FileStorage:
 
         with open(FileStorage.__file_path, 'w', encoding='utf8') as f:
             json.dump(temp, f)
+
+    # -------------------------------------------------------------------
 
     def reload(self):
         """Loads storage dictionary from file"""
@@ -43,10 +51,10 @@ class FileStorage:
         from models.review import Review
 
         classes = {
-                    'BaseModel': BaseModel, 'User': User, 'Place': Place,
-                    'State': State, 'City': City, 'Amenity': Amenity,
-                    'Review': Review
-                  }
+            'BaseModel': BaseModel, 'User': User, 'Place': Place,
+            'State': State, 'City': City, 'Amenity': Amenity,
+            'Review': Review
+        }
         try:
             with open(FileStorage.__file_path, 'r') as f:
                 file_data = json.load(f)
@@ -56,9 +64,17 @@ class FileStorage:
         except FileNotFoundError:
             pass
 
+    # -------------------------------------------------------------------
+
     def delete(self, obj=None):
         """Deletes obj from __objects if it is inside"""
         if obj:
             key = f"{obj.__class__.__name__}.{obj.id}"
             if key in FileStorage.__objects:
                 del FileStorage.__objects[key]
+
+    # -------------------------------------------------------------------
+
+    def close(self):
+        """Calling reload() to deserialize the JSON file to objects"""
+        self.reload()

@@ -19,6 +19,8 @@ class DBStorage:
     __engine = None
     __session = None
 
+    # -------------------------------------------------------------------
+
     def __init__(self):
         """Create engine and connect to database"""
         user = os.getenv("HBNB_MYSQL_USER")
@@ -32,6 +34,8 @@ class DBStorage:
 
         if env_ == 'test':
             Base.metadata.drop_all(self.__engine)
+
+    # -------------------------------------------------------------------
 
     def all(self, cls=None):
         """Returns a dictionary of __object"""
@@ -54,18 +58,26 @@ class DBStorage:
 
         return (my_dic)
 
+    # -------------------------------------------------------------------
+
     def new(self, obj):
         """add the object to the current database session"""
         self.__session.add(obj)
+
+    # -------------------------------------------------------------------
 
     def save(self):
         """commit all changes of the current database session"""
         self.__session.commit()
 
+    # -------------------------------------------------------------------
+
     def delete(self, obj=None):
         """delete from the current database session obj if not None"""
         if obj is not None:
             self.__session.delete(obj)
+
+    # -------------------------------------------------------------------
 
     def reload(self):
         """Create current database session from the engine
@@ -74,6 +86,8 @@ class DBStorage:
         factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
         Session = scoped_session(factory)
         self.__session = Session()
+
+    # -------------------------------------------------------------------
 
     def close(self):
         """Remove session"""
