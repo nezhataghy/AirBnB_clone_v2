@@ -20,7 +20,7 @@ def hbnb():
 
 @app.route("/c/<text>", strict_slashes=False)
 def handle_c_route(text):
-    """Handling C routes"""
+    """Handling C route"""
     return f"C {escape(text.replace('_', ' '))}"
 
 
@@ -31,9 +31,10 @@ def handle_python_route(text="is cool"):
     return f"Python {escape(text.replace('_', ' '))}"
 
 
-@app.route("/number/<n>", strict_slashes=False)
-def display_integer(number):
-    """"""
+@app.route("/number/<int:n>", strict_slashes=False)
+def display_integer(n):
+    """Handling number route"""
+    return f"{escape(n)} is a number"
 
 
 if __name__ == '__main__':
