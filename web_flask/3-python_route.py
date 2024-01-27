@@ -20,8 +20,13 @@ def hbnb():
 
 @app.route("/c/<text>", strict_slashes=False)
 def handle_c_route(text):
-    """handling C routes"""
+    """handling varible routes"""
     return f"C {escape(text.replace('_', ' '))}"
+
+
+@app.route("/python/<text>", strict_slashes=False)
+def handle_python_route(text="is cool"):
+    """handling varible routes"""
 
 
 if __name__ == '__main__':
