@@ -24,8 +24,8 @@ def show_states(id=None):
     if id is not None and state_id not in state_dict:
         states = None
     return render_template("9-states.html",
-                           states_list=states,
-                           cities_list=cities,
+                           states=states,
+                           cities=cities,
                            id=id)
 
 
